@@ -1,39 +1,48 @@
 package cloudtoolkit
 
 import (
-        "flag"
-        "net/http"
-        "io/ioutil"
-        "encoding/json"
-        "github.com/spf13/viper"
+	"encoding/json"
+	"flag"
+	"github.com/spf13/viper"
+	"io/ioutil"
+	"net/http"
 )
 
-func loadConfig(appName string, configServerUrl string) {
+const SPRING_CLOUD_CONFIG_SERVER_URL string = "spring.cloud.config.url"
 
-        // Get environment from flag, otherwise default to dev.
-        envProfilePtr := flag.String("profile", "dev", "environment profile, somewhat like spring.profiles.active in java")
-        flag.Parse()
-        envProfile := *envProfilePtr
-        Log.Println("Running as profile: " + envProfile)
-        if envProfile != "dev" {
-                configServerUrl = "http://configserver:8888"
-        }
+func ResolveProfile() string {
+	envProfilePtr := flag.String("profile", "dev", "environment profile, somewhat like spring.profiles.active in java")
+	flag.Parse()
+	return *envProfilePtr
+}
 
-        // Try to load from spring cloud config...
-        Log.Println("Loading configuration from Spring Cloud Config server at: " + configServerUrl)
+// Tries to resolve the URL to the spring cloud config server using a standardized value injected into Viper.
+func LoadSpringCloudConfigFromConfigProperty(appName string, profile string) {
+	if viper.IsSet(SPRING_CLOUD_CONFIG_SERVER_URL) {
+		url := viper.GetString(SPRING_CLOUD_CONFIG_SERVER_URL)
+		LoadSpringCloudConfig(appName, profile, url)
+	} else {
+		panic("Config property " + SPRING_CLOUD_CONFIG_SERVER_URL + " not set, panicing...")
+	}
+}
 
-        resp, err := http.Get(configServerUrl + "/" + appName + "-" + envProfile + "/" + envProfile)
-        if err != nil {
-                panic("Failed to load configuration: " + err.Error())
-        }
+func LoadSpringCloudConfig(appName string, profile string, configServerUrl string) {
 
-        body, err := ioutil.ReadAll(resp.Body)
+	// Try to load from spring cloud config...
+	Log.Info("Loading configuration from Spring Cloud Config server at: " + configServerUrl)
 
-        var cloudConfig SpringCloudConfig
-        json.Unmarshal(body, &cloudConfig)
+	resp, err := http.Get(configServerUrl + "/" + appName + "-" + profile + "/" + profile)
+	if err != nil {
+		panic("Failed to load configuration: " + err.Error())
+	}
 
-        for key, value := range cloudConfig.PropertySources[0].Source {
-                viper.Set(key, value)
-        }
-        viper.SetConfigType("json")
+	body, err := ioutil.ReadAll(resp.Body)
+
+	var cloudConfig SpringCloudConfig
+	json.Unmarshal(body, &cloudConfig)
+
+	for key, value := range cloudConfig.PropertySources[0].Source {
+		viper.Set(key, value)
+	}
+	viper.SetConfigType("json")
 }

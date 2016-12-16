@@ -1,6 +1,6 @@
 package cloudtoolkit
 
 type DiscoveryToken struct {
-        State string `json:"state"`   // UP, RUNNING, DOWN ??
-        Address string `json:"address"`
+	State   string `json:"state"` // UP, RUNNING, DOWN ??
+	Address string `json:"address"`
 }
