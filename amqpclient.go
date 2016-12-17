@@ -18,6 +18,10 @@ type MessagingClient struct {
 	conn *amqp.Connection
 }
 
+func (m MessagingClient) GetConn() *amqp.Connection {
+	return m.conn
+}
+
 // Typical host amqp://guest:guest@" + rabbitHost + ":5672
 func InitMessagingClientFromConfigProperty() *MessagingClient {
 	if viper.IsSet(AMQP_CONNECTION_STR) {

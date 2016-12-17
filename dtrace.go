@@ -21,7 +21,7 @@ func InitTracingFromConfigProperty(serviceName string) {
 		zipkinUrl = viper.GetString(ZIPKIN_SERVICE_URL)
 		initTracing(serviceName)
 	} else {
-		panic("Config property " + SPRING_CLOUD_CONFIG_SERVER_URL + " not set, panicing...")
+		panic("Config property " + ZIPKIN_SERVICE_URL + " not set, panicing...")
 	}
 }
 
@@ -47,7 +47,8 @@ func initTracing(serviceName string) {
 
 }
 
-func StartTrace(r *http.Request, opName string) opentracing.Span {
+// Loads tracing information from an INCOMING HTTP request.
+func StartHTTPTrace(r *http.Request, opName string) opentracing.Span {
 	carrier := opentracing.HTTPHeadersCarrier(r.Header)
 	clientContext, err := Tracer.Extract(opentracing.HTTPHeaders, carrier)
 	var span opentracing.Span
@@ -58,4 +59,16 @@ func StartTrace(r *http.Request, opName string) opentracing.Span {
 		span = Tracer.StartSpan(opName)
 	}
 	return span
+}
+
+// Adds tracing information to an OUTGOING HTTP request
+func ApplyTracing(req *http.Request, span opentracing.Span) {
+	carrier := opentracing.HTTPHeadersCarrier(req.Header)
+	err := Tracer.Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		carrier)
+	if err != nil {
+		panic("Unable to inject tracing context: " + err.Error())
+	}
 }
