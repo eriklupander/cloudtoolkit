@@ -62,7 +62,7 @@ func StartHTTPTrace(r *http.Request, opName string) opentracing.Span {
 }
 
 // Adds tracing information to an OUTGOING HTTP request
-func ApplyTracing(req *http.Request, span opentracing.Span) {
+func AddTracingToReq(req *http.Request, span opentracing.Span) {
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
 	err := Tracer.Inject(
 		span.Context(),
