@@ -10,11 +10,35 @@ This "cloud toolkit" is just a bit of glue around other 3rd party libraries for 
 * AMQP client through amqp (TODO link)
 * Zipkin / Opentracing through go-opentracing (TODO link)
 * Logging through Logrus (TODO link)
-* Eureka (through my own little Eureka library)
+* Eureka (through my own little Eureka library) TODO, see https://github.com/eriklupander/eeureka
 * OAuth token verification
 
 ### Usage
-TODO...
+
+#### Setting up a config repository
+See https://github.com/eriklupander/go-microservice-config for some sample configuration files.
+
+#### Example
+Loads configuration from Spring Cloud Config server deployed in your Swarm, inits zipkin, messaging and hystrix.
+The sample below uses "from config property", e.g. the LoadSpringCloudConfig needs to load the following properties into viper (with sample value):
+
+- amqp.connection.string: amqp://guest:guest@rabbitmq:5672
+- zipkin.service.url: http://zipkin:9411
+
+
+    import "github.com/eriklupander/cloudtoolkit"
+
+    func main() {
+        cloudtoolkit.LoadSpringCloudConfig("My application", "test", "http://configserver:8888")
+        cloudtoolkit.InitTracingFromConfigProperty(appName)
+        
+        amqpClient = cloudtoolkit.InitMessagingClientFromConfigProperty()
+        defer amqpClient.GetConn().Close()
+        
+        cloudtoolkit.ConfigureHystrix([]string{"get_account_secured"}, amqpClient)
+    }
+    
+#### 
 
 ### 3rd party libraries
 TODO

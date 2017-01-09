@@ -47,7 +47,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) bool {
 	}
 	// try to find authorization header
 	token := extractAuthorizationFromHeader(r)
-	req, _ := http.NewRequest("GET", "https://192.168.99.100:9999/uaa/user?access_token="+token, nil)
+	req, _ := http.NewRequest("GET", authServerUserUrl + "?access_token="+token, nil) //"https://192.168.99.100:9999/uaa/user?access_token="+token, nil)
 	var DefaultTransport http.RoundTripper = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
