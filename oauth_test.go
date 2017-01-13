@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 	. "github.com/smartystreets/goconvey/convey"
+        "time"
 )
 
 var sampleToken = "my-oauth-token"
@@ -40,6 +41,35 @@ func TestOAuthSpec(t *testing.T) {
                         Convey("The auth header extracted should be empty", func() {
                                 So(token, ShouldNotBeNil)
                                 So(token, ShouldBeEmpty)
+                        })
+                })
+        })
+}
+
+func TestSessionCache(t *testing.T) {
+        Convey("Given that the sessionCache is empty", t, func() {
+                sessionCache := SessionCache{}
+                instant := time.Now()
+                token := "token-123"
+
+                Convey("When a new Token is inserted", func() {
+                        sessionCache.Put(token, instant)
+
+                        Convey("Assert that the token has expiry + 1 hour", func() {
+                                So(sessionCache.IsValid(token), ShouldBeTrue)
+                                So(sessionCache.Get(token), ShouldResemble, instant.Add(time.Hour * 1))
+                        })
+
+                        Convey("Assert that another token is not valid", func() {
+                                So(sessionCache.IsValid("other-token"), ShouldBeFalse)
+                        })
+                })
+
+                Convey("When a faked expired Token is inserted", func() {
+                        sessionCache.Put("expired-token", instant.Add(time.Hour * - 3))
+
+                        Convey("Assert that this is NOT a valid token", func() {
+                                So(sessionCache.IsValid("expired-token"), ShouldBeFalse)
                         })
                 })
         })
