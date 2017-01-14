@@ -22,7 +22,7 @@ func DumpDNS() {
 func GetLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return ""
+		return "error"
 	}
 	for _, address := range addrs {
 		// check the address type and if it is not a loopback the display it
