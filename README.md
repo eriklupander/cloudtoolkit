@@ -6,7 +6,8 @@ This "cloud toolkit" is just a bit of glue around other 3rd party libraries for 
 
 ### Supported integrations
 
-* Hystrix through go-hystrix
+* Hystrix through go-hystrix (with publish to Netflix Turbine/Hystrix dashboard)
+* Configuration through Viper integrating with Spring Cloud Configuration.
 * AMQP client through amqp (TODO link)
 * Zipkin / Opentracing through go-opentracing (TODO link)
 * Logging through Logrus (TODO link)
