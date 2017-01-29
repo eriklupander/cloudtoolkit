@@ -19,6 +19,7 @@ func ConfigureHystrix(commands []string, amqpClient *MessagingClient) {
 			RequestVolumeThreshold: resolveProperty(command, "RequestVolumeThreshold"),
 			SleepWindow:            resolveProperty(command, "SleepWindow"),
 		})
+		Log.Printf("Circuit %v settings: %v", command, hystrix.GetCircuitSettings()[command])
 	}
 
 	hystrixStreamHandler := hystrix.NewStreamHandler()
